@@ -1,27 +1,61 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <!--START-->
 <html>
 <head>
     <style>
-        #animierte-scheibe {
-            width: 435px; /* Breite des Bildes */
-            height: 435px; /* Höhe des Bildes */
-            position: relative;
+        /* Allgemeiner Container-Stil, um Inhalte zu links zu platzieren */
+        .center-container {
+            text-align: center;
         }
 
         /* Stil des Skaters */
         #hopping-skater {
             width: 530px; /* Breite des Skaters */
             height: 471px; /* Höhe des Skaters */
-            background-image: url('spritesheet.png'); /* Pfad zum Sprite-Sheet, Skatergrafik ist von freepik.com */
+            background-image: url('spritesheet.png'); /* Pfad zum Spritesheet, Skatergrafik ist von freepik.com */
             background-repeat: no-repeat;
-            position: absolute;
-            bottom: 20px; /* Startposition unten (angepasst) */
+        }
+
+        /* Container-Stil für Animationen */
+        .animation-container {
+            width: 50%; /* 50% der Breite des Bildschirms für jede Animation */
+            display: inline-block;
+            text-align: center;
+            position: relative;
+        }
+
+        #animierte-scheibe {
+            width: 365px; /* Breite des Bildes */
+            height: 365px; /* Höhe des Bildes */
+        }
+
+        /* Textfarbe in Anthrazit */
+        h1, h2, h3, p {
+            color: #333; /* Anthrazitfarbe in Hexadezimal (Grau) */
+            text-align: center;
         }
     </style>
 </head>
+
 <body>
-    <img id="animierte-scheibe" src="1.png" alt="animierte Scheibe">
-    <div id="hopping-skater"></div> <!-- Skater unterhalb des rotierenden Rads -->
+    <h1> EA1 - Animierte Scheibe </h1>  <!-- Titel der Arbeit und weitere Unterschriften + Beschreibungen -->
+    <h3> von Makbule Balin im Modul Graphical Visualisation Technologies </h3>
+    <p>Die Uhr rotiert automatisch beim Laden der Seite. Mit Klick auf die Taste <b>'a'</b> kann man die Animation stoppen und weiterführen.<br> Die Uhr habe ich in Illustrator designt. Für die Programmierung der Elemente wurden diverse Websites, wie w3schools.com, wiki.selfhtml.org und youtube.com zur Hilfe gezogen.</p>
+    <br>
+    <br>
+
+    <div class="center-container">
+        <div class="animation-container">
+            <img id="animierte-scheibe" src="1.png" alt="animierte Scheibe">
+        </div>
+
+        <div class="animation-container">
+            <br> 
+            <br>
+            <h2> Erweiterung - Cooler Skater </h2>
+            <p>Dies ist ein Skater, der einen <b>'Ollie'</b> macht. Die Grafiken sind von freepik.com. Das Spritesheet habe ich in Illustrator erstellt. </p>
+            <div id="hopping-skater"></div> <!-- Skater unterhalb der rotierenden Uhr -->
+        </div>
+    </div>
 
     <script>
         const imageFiles = [
@@ -40,7 +74,7 @@
                 // Aktuelles Bild laden und anzeigen
                 imageElement.src = imageFiles[currentImageIndex];
 
-                // Zum nächsten Bild wechseln (zyklisch)
+                // Zum nächsten Bild wechseln 
                 currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
             }
 
@@ -84,8 +118,6 @@
 
         // Startet die Animation, wenn die Seite geladen ist
         startHoppingAnimation();
-
     </script>
 </body>
-
-</html>
+</html> <!--END-->
