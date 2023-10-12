@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #animierte-scheibe {
+            width: 435px; /* Breite des Bildes */
+            height: 435px; /* Höhe des Bildes */
+            position: relative;
+        }
+
+        /* Stil des Skaters */
+        #hopping-skater {
+            width: 530px; /* Breite des Skaters */
+            height: 471px; /* Höhe des Skaters */
+            background-image: url('spritesheet.png'); /* Pfad zum Sprite-Sheet, Skatergrafik ist von freepik.com */
+            background-repeat: no-repeat;
+            position: absolute;
+            bottom: 20px; /* Startposition unten (angepasst) */
+        }
+    </style>
+</head>
+<body>
+    <img id="animierte-scheibe" src="1.png" alt="animierte Scheibe">
+    <div id="hopping-skater"></div> <!-- Skater unterhalb des rotierenden Rads -->
+
+    <script>
+        const imageFiles = [
+            "1.png",
+            "2.png",
+            "3.png",
+            "4.png", // 4 Bilder mit verschiedenen Rotationszuständen
+        ];
+
+        const imageElement = document.getElementById("animierte-scheibe");
+        let currentImageIndex = 0;
+        let animationRunning = true; // Variable, um den Animationsstatus zu verfolgen
+
+        function rotateWheel() {
+            if (animationRunning) {
+                // Aktuelles Bild laden und anzeigen
+                imageElement.src = imageFiles[currentImageIndex];
+
+                // Zum nächsten Bild wechseln (zyklisch)
+                currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
+            }
+
+            // Die Zeit zwischen den Bildwechseln (in Millisekunden)
+            setTimeout(rotateWheel, 600);
+        }
+
+        // Funktion zum Starten oder Anhalten der Animation mit der Taste "a"
+        function toggleAnimation(event) {
+            if (event.key === "a") {
+                animationRunning = !animationRunning; // Umkehren des Animationsstatus
+            }
+        }
+
+        // Event Listener, um die Funktion bei Tastendruck zu aktivieren
+        window.addEventListener("keydown", toggleAnimation);
+
+        // Startet die Animation (Rotation), wenn die Seite geladen ist
+        window.onload = rotateWheel;
+
+        function startHoppingAnimation() {
+            const manElement = document.getElementById("hopping-skater");
+            let currentFrame = 0;
+
+            function animate() {
+                // Position des nächsten Frames im Sprite-Sheet berechnen
+                const frameX = -currentFrame * 600; // Breite eines einzelnen Frames entsprechend ändern
+                manElement.style.backgroundPosition = frameX + "px 0px"; // Die Höhe ist 0, da das Sprite-Sheet horizontal ist
+
+                currentFrame++;
+                if (currentFrame >= 7) { // Anzahl der Frames im Sprite-Sheet
+                    currentFrame = 0;
+                }
+
+                // Die Zeit zwischen den Animationsschritten (in Millisekunden)
+                setTimeout(animate, 200);
+            }
+
+            animate(); // Starten der Animation
+        }
+
+        // Startet die Animation, wenn die Seite geladen ist
+        startHoppingAnimation();
+
+    </script>
+</body>
+
+</html>
