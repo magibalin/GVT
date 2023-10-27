@@ -1,0 +1,148 @@
+<!DOCTYPE html> <!--START-->
+<html>
+  <head>
+    <title>WebGL 2D Linien mit verschiedenen Farben</title>
+    <style>
+      body {
+        margin: 0; /* Kein Außenabstand im Body */
+        overflow: hidden; /* Verhindert Scrollbalken, wenn der Inhalt zu groß ist */
+        display: flex; /* Verwendet das Flexbox-Layout */
+        flex-direction: column; /* Legt die Ausrichtung der Flexbox auf vertikal (Spalten) fest */
+        justify-content: center; /* Zentriert den Inhalt vertikal auf der Seite */
+        align-items: center; /* Zentriert den Inhalt horizontal auf der Seite */
+        height: 100vh; /* Füllt die volle Höhe des Viewports aus */
+      }
+      canvas {
+        display: block; /* Stellt sicher, dass das Canvas-Element den gesamten verfügbaren Platz einnimmt */
+      }
+    </style>
+  </head>
+  <body>
+    <h1> EA2 - 2D Geometrie mit Linien </h1>  <!-- Titel der Arbeit und weitere Unterschriften + Beschreibungen -->
+    <h3> von Makbule Balin im Modul Graphical Visualisation Technologies </h3>
+    <p> Hier wurde <b>gl.LINE_STRIP</b>, ein Zeichenmodus in WebGL, verwendet, um 30 zufällig positionierte Linien mit zufälligen Farben auf einem Canvas darzustellen. <br />
+    Für  die Lösung der Aufgabe wurden diverse Websites wie webglfundamentals.org, w3schools.com, wiki.selfhtml.org und youtube.com zur Hilfe gezogen.</p>
+    <br>
+    <br>
+  <body>
+    <canvas id="myCanvas"></canvas>
+
+    <script type="text/javascript">
+      // Referenz zum Canvas-Element holen
+      const canvas = document.getElementById("myCanvas");
+      // Anfangsgröße des Canvas auf 400x300 Pixel ändern
+      canvas.width = 400;
+      canvas.height = 300;
+
+      //  WebGL-Kontext für das Canvas erhalten
+      const gl = canvas.getContext("webgl");
+
+      // Wenn WebGL nicht unterstützt wird,  wird mit einem experimentellen WebGL-Kontext versucht
+      if (!gl) {
+        console.error("WebGL wird nicht unterstützt, wechsle zum experimentellen WebGL-Kontext");
+        gl = canvas.getContext("experimental-webgl");
+      }
+
+      // Wenn WebGL immer noch nicht unterstützt wird, wird Fehlermeldung angezeigt
+      if (!gl) {
+        alert("Ihr Browser unterstützt kein WebGL");
+      }
+
+      // Vertex-Shader Programm: Hier wird definiert, wie die Koordinaten und Farben verarbeitet werden
+      const vsSource = `
+        attribute vec2 coordinates; // Eingabeattribut für die Koordinaten (x, y)
+        attribute vec3 color; // Eingabeattribut für die Farben (r, g, b)
+        varying vec3 vColor; // Überträgt die Farbe an den Fragment-Shader
+        void main(void) {
+          gl_Position = vec4(coordinates, 0.0, 1.0); // Setzt die Position im Raum (z-Komponente ist 0)
+          vColor = color; // Überträgt die Farbe an den Fragment-Shader
+        }
+      `;
+
+      // Fragment-Shader Programm: Hier wird definiert, wie die Farben gerendert werden
+      const fsSource = `
+        precision mediump float;
+        varying vec3 vColor; // Übertragen von der Vertex-Shader
+        void main(void) {
+          gl_FragColor = vec4(vColor, 1.0); // Setzt die Farbe des Fragments (Pixel)
+        }
+      `;
+
+      // Funktion zum Kompilieren eines Shaders
+      function compileShader(source, type) {
+        const shader = gl.createShader(type); // Erstellt einen neuen Shader vom angegebenen Typ
+        gl.shaderSource(shader, source); // Lädt den Quellcode in den Shader
+        gl.compileShader(shader); // Kompiliert den Shader
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          // Überprüft, ob der Shader erfolgreich kompiliert wurde
+          console.error("Ein Fehler ist beim Kompilieren der Shader aufgetreten: " + gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+
+        return shader;
+      }
+
+      // Kompilieren der Vertex- und Fragment-Shaders
+      const vertexShader = compileShader(vsSource, gl.VERTEX_SHADER);
+      const fragmentShader = compileShader(fsSource, gl.FRAGMENT_SHADER);
+
+      // Erstellen des Shader-Programms und Verwenden
+      const shaderProgram = gl.createProgram(); // Erstellt ein neues Shader-Programm
+      gl.attachShader(shaderProgram, vertexShader); // Hängt den Vertex-Shader an das Programm an
+      gl.attachShader(shaderProgram, fragmentShader); // Hängt den Fragment-Shader an das Programm an
+      gl.linkProgram(shaderProgram); // Verknüpft die beiden Shader
+      gl.useProgram(shaderProgram); // Verwendet das Shader-Programm
+
+      // Definition von Vertices (Koordinaten) und Farben für 30 Linien
+      const vertices = [];
+      const colors = [];
+
+      for (let i = 0; i < 30; i++) {
+        const x = Math.random() * 2 - 1; // Zufällige x-Koordinate im Bereich [-1, 1]
+        const y = Math.random() * 2 - 1; // Zufällige y-Koordinate im Bereich [-1, 1]
+
+        vertices.push(x, y); // Fügt die Koordinaten hinzu
+
+        const r = Math.random(); // Zufällige R-Komponente der Farbe
+        const g = Math.random(); // Zufällige G-Komponente der Farbe
+        const b = Math.random(); // Zufällige B-Komponente der Farbe
+        colors.push(r, g, b); // Fügt die Farben hinzu
+      }
+
+      // Erstellen eines Vertex-Buffers für die Koordinaten
+      const vertexBuffer = gl.createBuffer(); // Erstellt einen Buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // Bindet den Buffer für die Verwendung
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW); // Lädt die Koordinaten in den Buffer
+
+      // Erstellen eines Vertex-Buffers für die Farben
+      const colorBuffer = gl.createBuffer(); // Erstellt einen Buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer); // Bindet den Buffer für die Verwendung
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW); // Lädt die Farben in den Buffer
+
+      // Binden des Vertex-Buffers für die Koordinaten
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      const coord = gl.getAttribLocation(shaderProgram, "coordinates"); // Ermittelt den Speicherort des Attributs "coordinates" im Shader
+      gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0); // Konfiguriert das Attribut für die Verwendung
+      gl.enableVertexAttribArray(coord); // Aktiviert das Attribut
+
+      // Binden des Vertex-Buffers für die Farben
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      const color = gl.getAttribLocation(shaderProgram, "color"); // Ermittelt den Speicherort des Attributs "color" im Shader
+      gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0); // Konfiguriert das Attribut für die Verwendung
+      gl.enableVertexAttribArray(color); // Aktiviert das Attribut
+
+      // Setzen der Hintergrundfarbe und Löschen des Canvas
+      gl.clearColor(0.0, 0.0, 0.0, 1.0); // Setzt die Hintergrundfarbe auf Schwarz
+      gl.clear(gl.COLOR_BUFFER_BIT); // Löscht den Inhalt des Canvas mit der Hintergrundfarbe
+
+      // Hier wird der Skalierungsfaktor angepasst, um die Größe zu ändern
+      const scaleX = canvas.width / 2;
+      const scaleY = canvas.height / 2;
+      gl.uniform2f(gl.getUniformLocation(shaderProgram, "scale"), scaleX, scaleY);
+
+      gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2); // Zeichnet die Linien im LINE_STRIP Modus
+    </script>
+  </body>
+</html> <!--END-->
