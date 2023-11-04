@@ -1,0 +1,106 @@
+<!DOCTYPE html> <!--START-->
+<html>
+<head>
+    <title>2D Geometrie aus zwei farbig gefüllten Dreiecken in WebGL</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1, h3, p {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1> EA3 - 2D Geometrie aus farbig gefüllten Dreiecken </h1> <!-- Titel der Arbeit und weitere Unterschriften + Beschreibungen -->
+    <h3> von Makbule Balin im Modul Graphical Visualisation Technologies </h3>
+    <p> Aufgabe: Kolorieren Sie eine eigene 2D-Geometrie, indem Sie nun Dreiecke (keine Linien) erzeugen.<br /><br />
+    Für die Lösung der Aufgabe wurden diverse Websites wie webglfundamentals.org, w3schools.com, wiki.selfhtml.org und youtube.com zur Hilfe gezogen.</p>
+    <br>
+
+    <!-- Canvas-Element, in dem die WebGL-Grafik gerendert wird -->
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+
+    <script type="text/javascript">
+        // Zugriff auf das Canvas-Element und WebGL-Kontext
+        const canvas = document.getElementById('myCanvas');
+        const gl = canvas.getContext('webgl');
+
+        // Shader-Programme für die Grafik
+        // Vertex-Shader: Verarbeitet die Positionen der Vertices
+        // und projiziert sie auf den Bildschirm.
+        const vertexShaderSource = `
+            attribute vec2 position;
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+
+        // Fragment-Shader: Definiert die Farben der Pixel.
+        const fragmentShaderSource = `
+            precision mediump float;
+            uniform vec3 color;
+            void main() {
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        // Kompilieren und verknüpfen der Shader
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexShaderSource);
+        gl.compileShader(vertexShader);
+
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentShaderSource);
+        gl.compileShader(fragmentShader);
+
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+
+        // Definieren der Vertices für die beiden Dreiecke
+        const vertices = new Float32Array([
+            // Erstes Dreieck (rosa)
+            -0.5, 0.5,      // Obere linke Ecke
+            -0.5, -0.5,     // Untere linke Ecke
+            0.0, 0.0,       // Spitze
+
+            // Zweites Dreieck (gelb)
+            0.5, 0.5,       // Obere rechte Ecke
+            0.5, -0.5,      // Untere rechte Ecke
+            0.0, 0.0,       // Spitze
+        ]);
+
+        // Einrichten des Vertex-Attributs und des Puffers
+        const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'position');
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+        // Uniform-Variable für die Farbe
+        const colorLocation = gl.getUniformLocation(shaderProgram, 'color');
+
+        // Festlegen der Hintergrundfarbe (weiß)
+        gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Zeichnen des ersten Dreiecks in rosa
+        gl.uniform3f(colorLocation, 1.0, 0.5, 0.8); // Rosa
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        // Zeichnen des zweiten Dreiecks in gelb
+        gl.uniform3f(colorLocation, 1.0, 1.0, 0.0); // Gelb
+        gl.drawArrays(gl.TRIANGLES, 3, 3);
+    </script>
+</body>
+
+</html> <!--END-->
