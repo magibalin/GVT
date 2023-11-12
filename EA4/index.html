@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EA4 Parametrisierte Flächen</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    canvas {
+      display: block;
+      margin-top: 10px;
+    }
+
+    button {
+      display: block;
+      margin-top: 10px;
+    }
+
+    p {
+      text-align: justify;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>EA4 Parametrisierte Flächen</h1>
+  <h3> von Makbule Balin im Modul Graphical Visualisation Technologies </h3>
+  <p>
+    Aufgabe: Erzeugen Sie zwei neue parametrisierte Flächen mit Linien.
+    Füllen Sie dann die Flächen und kolorieren Sie sie passend zur jeweiligen Flächenform,
+    z. B. mit Farbverläufen. Die Linien sollen noch sichtbar sein, oder es besteht die Möglichkeit,
+    zwischen Linien und Füllung umzuschalten.
+    <br><br>
+    Für die Lösung der Aufgabe wurden diverse Websites wie
+    http://www.3d-meier.de/tut3/Seite0.html,  webglfundamentals.org, w3schools.com, wiki.selfhtml.org
+    und youtube.com zur Hilfe gezogen.
+  </p>
+
+  
+  <canvas id="canvas1" width="500" height="500"></canvas>
+  <button id="toggleButton1">Kissen färben</button>
+  <hr>
+  <p>
+    Hier eine weitere parametrisierte Fläche.
+  </p>
+
+  <canvas id="canvas2" width="500" height="500"></canvas>
+  <button id="toggleButton2">Horn färben</button>
+<br>
+<br>
+<p>
+  Eigene parametrisierte Fläche durch Ausprobieren und Ändern von cos- und sin-Funktionen.
+</p>
+
+<!-- Canvas-Element für die dritte parametrisierte Fläche -->
+<canvas id="canvas3" width="500" height="500"></canvas>
+
+<script src="horn.js"></script> <!--Hier werden die JS-Skripte in das Dokument eingebunden-->
+<script src="kissen.js"></script>
+<script src="Flaeche.js"></script>
+</body>
+
+</html>

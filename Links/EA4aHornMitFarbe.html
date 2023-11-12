@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parametrisierte Fläche mit Linien und Dreiecken</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+    button { display: block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <button id="toggleButton">Farbe</button>
+  <script>
+    // Canvas-Element und den WebGL-Kontext holen
+    var canvas = document.getElementById('canvas');
+    var gl = canvas.getContext('experimental-webgl');
+
+    // Überprüfen, ob WebGL unterstützt wird
+    if (!gl) {
+      console.error('WebGL-Initialisierung fehlgeschlagen. Ihr Browser unterstützt es möglicherweise nicht.');
+    }
+
+    // WebGL-Konfiguration
+    gl.clearColor(0.95, 0.95, 0.95, 1);
+    gl.frontFace(gl.CCW);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
+    // Vertex-Shader-Quellcode
+    var vsSource = `
+      attribute vec3 pos;
+      attribute vec4 col;
+      varying vec4 color;
+
+      void main() {
+        color = col;
+        gl_Position = vec4(0.5 * pos, 1.0);
+      }
+    `;
+
+    // Fragment-Shader-Quellcode
+    var fsSource = `
+      precision mediump float;
+      varying vec4 color;
+
+      void main() {
+        gl_FragColor = color;
+      }
+    `;
+
+    // Fragment-Shader-Quellcode für die Farbfüllung (Gold)
+    var fsColorSource = `
+      precision mediump float;
+      varying vec4 color;
+
+      void main() {
+        // Goldene Farbe für die Füllung
+        gl_FragColor = vec4(1.0, 0.84, 0.0, 1.0);
+      }
+    `;
+
+    // Fragment-Shader-Quellcode für die Linienfarbe (Silber)
+    var fsLineSource = `
+      precision mediump float;
+      varying vec4 color;
+
+      void main() {
+        // Silberfarbe für die Linien
+        gl_FragColor = vec4(0.75, 0.75, 0.75, 1.0);
+      }
+    `;
+
+    // WebGL-Shader erstellen und kompilieren
+    var vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, vsSource);
+    gl.compileShader(vs);
+
+    var fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, fsSource);
+    gl.compileShader(fs);
+
+    var fsColor = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fsColor, fsColorSource);
+    gl.compileShader(fsColor);
+
+    var fsLine = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fsLine, fsLineSource);
+    gl.compileShader(fsLine);
+
+    // WebGL-Shaderprogramme erstellen und verknüpfen
+    var prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    var progColor = gl.createProgram();
+    gl.attachShader(progColor, vs);
+    gl.attachShader(progColor, fsColor);
+    gl.linkProgram(progColor);
+
+    var progLine = gl.createProgram();
+    gl.attachShader(progLine, vs);
+    gl.attachShader(progLine, fsLine);
+    gl.linkProgram(progLine);
+
+    // Flag für gefüllte Fläche
+    var isFilled = false;
+
+    // Daten für Vertices und Indices erstellen
+    var vertices, indicesLines, indicesTris;
+    createVertexData();
+
+    // Vertex-Buffer-Objekt (VBO) für Positionen erstellen
+    var vboPos = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vboPos);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    // Attribut für Position aktivieren
+    var posAttrib = gl.getAttribLocation(prog, 'pos');
+    gl.vertexAttribPointer(posAttrib, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(posAttrib);
+
+    // Attribut für Farbe aktivieren
+    var colAttrib = gl.getAttribLocation(prog, 'col');
+
+    // Index-Buffer-Objekte (IBOs) erstellen und Daten übergeben
+    var iboLines = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iboLines);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indicesLines, gl.STATIC_DRAW);
+    iboLines.numberOfElements = indicesLines.length;
+
+    var iboTris = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iboTris);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indicesTris, gl.STATIC_DRAW);
+    iboTris.numberOfElements = indicesTris.length;
+
+    // Bildschirm leeren
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Initial Linien zeichnen
+    drawLines();
+
+    // Button-Klick-Ereignis
+    var toggleButton = document.getElementById('toggleButton');
+    toggleButton.addEventListener('click', function() {
+      isFilled = !isFilled;
+      if (isFilled) {
+        drawFilled();
+        drawLines(); // Linien erneut zeichnen, um sie über der gefüllten Fläche sichtbar zu machen
+      } else {
+        drawLines();
+      }
+    });
+
+    // Funktion zum Zeichnen der Linien
+    function drawLines() {
+      if (isFilled) {
+        gl.useProgram(progLine);
+      } else {
+        gl.useProgram(prog);
+      }
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iboLines);
+      gl.drawElements(gl.LINES, iboLines.numberOfElements, gl.UNSIGNED_SHORT, 0);
+    }
+
+    // Funktion zum Zeichnen der gefüllten Fläche
+    function drawFilled() {
+      gl.useProgram(progColor);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iboTris);
+      gl.drawElements(gl.TRIANGLES, iboTris.numberOfElements, gl.UNSIGNED_SHORT, 0);
+    }
+
+    // Funktion zum Erstellen der Vertex-Daten
+    function createVertexData() {
+      var n = 100;
+      var m = 100;
+      vertices = new Float32Array(3 * (n + 1) * (m + 1));
+      indicesLines = new Uint16Array(2 * 2 * n * m);
+      indicesTris = new Uint16Array(3 * 2 * n * m);
+
+      var a = 1;
+      var b = 1.5;
+      var c = 0.1;
+
+      var iLines = 0;
+      var iTris = 0;
+
+      for (var i = 0, u = 0; i <= n; i++, u += 1/n) {
+        for (var j = 0, v = -Math.PI; j <= m; j++, v += 2*Math.PI/m) {
+          var iVertex = i * (m + 1) + j;
+
+          var x = (a + u * Math.cos(v)) * Math.sin(b * Math.PI * u);
+          var y = (a + u * Math.cos(v)) * Math.cos(b * Math.PI * u) + c * u;
+          var z = u * Math.sin(v);
+
+          vertices[iVertex * 3] = x;
+          vertices[iVertex * 3 + 1] = y;
+          vertices[iVertex * 3 + 2] = z;
+
+          if (j > 0 && i > 0) {
+            indicesLines[iLines++] = iVertex - 1;
+            indicesLines[iLines++] = iVertex;
+            indicesLines[iLines++] = iVertex - (m + 1);
+            indicesLines[iLines++] = iVertex;
+          }
+
+          if (j > 0 && i > 0) {
+            indicesTris[iTris++] = iVertex;
+            indicesTris[iTris++] = iVertex - 1;
+            indicesTris[iTris++] = iVertex - (m + 1);
+
+            indicesTris[iTris++] = iVertex - 1;
+            indicesTris[iTris++] = iVertex - (m + 1) - 1;
+            indicesTris[iTris++] = iVertex - (m + 1);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
