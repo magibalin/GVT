@@ -131,13 +131,9 @@
  // Button-Klick-Ereignis
  var toggleButton2 = document.getElementById('toggleButton2');
  toggleButton2.addEventListener('click', function() {
-   isFilled = !isFilled;
-   if (isFilled) {
-     drawFilled();
-     drawLines(); // Linien erneut zeichnen, um sie über der gefüllten Fläche sichtbar zu machen
-   } else {
-     drawLines();
-   }
+     window.location.href = 'https://magibalin.github.io/GVT/Links/EA4aHornMitFarbe.html';  // Link setzen
+     isFilled = false;  // Variable zurücksetzen
+     drawLines();  // Linien zeichnen
  });
 
  // Funktion zum Zeichnen der Linien
