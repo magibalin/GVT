@@ -1,0 +1,293 @@
+<!--------START------------->
+
+<html>
+<head>
+
+   <!-- Titel und Metadaten -->
+   <title>Rekursives Kugelmodell</title>
+   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+   <!-- JavaScript-Bibliotheken und Shader -->
+   <script type="text/javascript" src="ext/gl-matrix.js"></script>
+   <script type="text/javascript" src="webgl-utils.js"></script>
+   <script type="text/javascript" src="sphere.js"></script>
+
+<body onload="webGLStart();">
+    <div id="canvas-container">
+       <canvas id="lesson04-canvas" style="border: none;" width="500" height="500"></canvas>
+   </div>
+   
+   <div id="header">
+
+       <H3> Rekursives Kugelmodel </H3>
+   <br>
+       <strong>y</strong> : Schaltet zwischen Gitter und Farbe um<br>
+       <strong>x</strong> : Rekursionstiefe- (mindestens 0)<br>
+       <strong>c</strong> : Rekursionstiefe+ (maximal 6)
+       <br>
+       <br>
+   </div>
+   <br>
+   <br>
+   <br>
+
+</body>
+
+    <!-- Stil für das Layout -->
+    <style>
+        #container {
+            position: relative;
+            width: 500px; /* Breite des Canvas */
+            height: 500px; /* Höhe des Canvas */
+        }
+
+        #header {
+            position: absolute;
+            top: 10px; /* Abstand von oben */
+            left: 20%; /* Horizontal zentriert */
+            transform: translateX(-50%);
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: black;
+            text-align: left;
+            
+        }
+    </style>
+
+ 
+
+    <!-- Fragment-Shader -->
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+    
+        void main(void) {
+            gl_FragColor = vec4(0.858, 0.678, 0.937, 1.0); // Fliederfarbe für die Kugel (Rot = 0.858, Grün = 0.678, Blau = 0.937)
+        }
+    </script>
+
+    <!-- Vertex-Shader -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec4 aVertexColor;
+
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+            vColor = aVertexColor;
+        }
+    </script>
+
+
+    <!-- JavaScript Code -->
+    <script type="text/javascript">
+
+        var gl;
+        var wireFrames = false;
+        var sphere;
+        var recursionDepth = 2; // Startrekursionstiefe
+        
+        // Ereignisbehandlung für Tastendruck
+        window.onkeypress = function(event){
+            key = getPressedChar(event);
+            if(key == "y") {
+                wireFrames = !wireFrames; // Schaltet zwischen Drahtmodell und Farbe um
+            }else if(key == "x"){
+                recursionDepth = Math.max(0, --recursionDepth); // Verringert die Rekursionstiefe um 1 (mindestens 0)
+                sphere.changeRecursion(recursionDepth);
+            }else if(key == "c"){
+                recursionDepth = Math.min(6, ++recursionDepth); // Erhöht die Rekursionstiefe um 1 (maximal 6)
+                sphere.changeRecursion(recursionDepth);
+            }
+        }
+
+        // Funktion, um den gedrückten Buchstaben zu erhalten
+        function getPressedChar(event){
+            if(event.which == null) {
+                return String.fromCharCode(event.keyCode)    // Für Internet Explorer
+            }else if(event.which!=0 && event.charCode!=0) {
+                return String.fromCharCode(event.which);     // Für andere Browser
+            }else{
+                return null;        // Für spezielle Tasten
+            }
+        }
+
+        // Initialisierung der WebGL-Umgebung
+        function initGL(canvas) {
+            try {
+                gl = canvas.getContext("experimental-webgl");
+                gl.viewportWidth = canvas.width;
+                gl.viewportHeight = canvas.height;
+            } catch (e) {
+            }
+            if (!gl) {
+                alert("WebGL konnte nicht initialisiert werden, tut uns leid :-(");
+            }
+        }
+
+        // Funktion zum Abrufen des Shader-Codes
+        function getShader(gl, id) {
+            var shaderScript = document.getElementById(id);
+            if (!shaderScript) {
+                return null;
+            }
+
+            var str = "";
+            var k = shaderScript.firstChild;
+            while (k) {
+                if (k.nodeType == 3) {
+                    str += k.textContent;
+                }
+                k = k.nextSibling;
+            }
+
+            var shader;
+            if (shaderScript.type == "x-shader/x-fragment") {
+                shader = gl.createShader(gl.FRAGMENT_SHADER);
+            } else if (shaderScript.type == "x-shader/x-vertex") {
+                shader = gl.createShader(gl.VERTEX_SHADER);
+            } else {
+                return null;
+            }
+
+            gl.shaderSource(shader, str);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert(gl.getShaderInfoLog(shader));
+                return null;
+            }
+
+            return shader;
+        }
+
+        // Shader-Initialisierung
+        var shaderProgram;
+
+        function initShaders() {
+            var fragmentShader = getShader(gl, "shader-fs");
+            var vertexShader = getShader(gl, "shader-vs");
+
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert("Shader konnten nicht initialisiert werden");
+            }
+
+            gl.useProgram(shaderProgram);
+
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+            gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        }
+
+
+        // Matrizen für Transformationen
+        var mvMatrix = mat4.create();
+        var mvMatrixStack = [];
+        var pMatrix = mat4.create();
+
+        // Funktion zum Speichern der aktuellen Modelview-Matrix
+        function mvPushMatrix() {
+            var copy = mat4.create();
+            mat4.copy(copy, mvMatrix);
+            mvMatrixStack.push(copy);
+        }
+
+        // Funktion zum Wiederherstellen der gespeicherten Modelview-Matrix
+        function mvPopMatrix() {
+            if (mvMatrixStack.length == 0) {
+                throw "Ungültige popMatrix!";
+            }
+            mvMatrix = mvMatrixStack.pop();
+        }
+
+        // Funktion zum Setzen der Uniform-Matrizen im Shader
+        function setMatrixUniforms() {
+            gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+            gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+        }
+
+        // Umwandlung von Grad in Radiant
+        function degToRad(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        // Initialisierung von WebGL-Buffern für das Zeichnen der Szene
+        var cubeVertexPositionBuffer;
+        var cubeVertexColorBuffer;
+        var cubeVertexIndexBuffer;
+
+        var rPyramid = 0;
+        var rCube = 0;
+
+        // Funktion zum Zeichnen der Szene
+        function drawScene() {
+            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+            gl.disable(gl.CULL_FACE);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+
+            mvPushMatrix();
+            mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -8.0]); // Bewegung in die Tiefe
+
+            // Zentrieren der Kugel
+            var sphereScale = 1.5; // Anpassung der Kugelgröße
+            mat4.scale(mvMatrix, mvMatrix, [sphereScale, sphereScale, sphereScale]);
+
+            var sphereTranslation = [
+                0.0, // Horizontal zentrieren
+                0.0, // Vertikal zentrieren
+                0.0 // Position in der Tiefe
+            ];
+            mat4.translate(mvMatrix, mvMatrix, sphereTranslation);
+
+            mat4.rotate(mvMatrix, mvMatrix, degToRad(rPyramid), [0, 1, 0]);
+            
+            setMatrixUniforms();
+            sphere.draw();
+            mvPopMatrix();
+        }
+
+     
+
+        // Hauptfunktion für die Aktualisierung der Szene
+        function tick() {
+            requestAnimFrame(tick);
+            drawScene();
+            animate();
+        }
+
+        // Startfunktion für WebGL
+        function webGLStart() {
+            var canvas = document.getElementById("lesson04-canvas");
+            initGL(canvas);
+            initShaders()
+
+            sphere = new Sphere(recursionDepth);
+
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+
+            tick();
+        }
+
+    </script>
+   
+</head>
+
+
+</html>
+<!--------END------------->
