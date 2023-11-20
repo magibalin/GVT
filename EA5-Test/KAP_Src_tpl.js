@@ -125,7 +125,6 @@ var app = ( function() {
 		// fill-style
 		var fs = "fillwireframe";
 		createModel("torus", fs);
-		createModel("cone", fs);
 		createModel("plane", "wireframe");
 	}
 
