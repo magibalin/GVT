@@ -1,0 +1,131 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_sphere.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="GVT_Src_vertexData_plane.js"></script>
+		<script src="TFM_Src_tpl.js"></script>
+
+ <!-- Stile für das Canvas und den Kopfbereich -->
+ <style>
+	/* Stil für das Canvas */
+	canvas {
+		display: block;
+		margin: 0 auto; /* Zentrierung des Canvas */
+		border: 1px solid black; /* Rand für Sichtbarkeit */
+	}
+
+	/* Stil für den Kopfbereich */
+	h1, h3, p {
+		text-align: center;
+		font-family: Arial, sans-serif;
+	}
+
+	/* Stil für den grauen Text */
+	.grey-text {
+		color: grey;
+	}
+
+	
+</style>
+
+
+
+		<script type="x-shader/x-vertex" id="vertexshader">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform vec3 uSphereColors[4]; // Array für die Kugelfarben
+
+			varying vec4 vColor;
+			uniform vec3 uColor; // Hinzugefügte Uniform-Variable für Farben.
+
+			void main(){
+			gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
+
+			vColor = vec4(aNormal.x, aNormal.y, aNormal.z, 1.0);
+			vColor = (vColor + 1.4) / 2.0;
+			}
+		</script>
+
+
+		 <!-- Stile für das Canvas und den Kopfbereich -->
+		 <style>
+			/* Stil für das Canvas */
+			canvas {
+				display: block;
+				margin: 0 auto; /* Zentrierung des Canvas */
+				border: 1px solid black; /* Rand für Sichtbarkeit */
+			}
+	
+			/* Stil für den Kopfbereich */
+			h1, h3, p {
+				text-align: center;
+				font-family: Arial, sans-serif;
+			}
+	
+			/* Stil für den grauen Text */
+			.grey-text {
+				color: grey;
+			}
+	
+			  
+		</style>
+		
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			varying vec4 vColor;
+
+			void main() {
+			gl_FragColor = vColor;
+			}
+		</script>
+	</head>
+
+
+ <!-- Inhalte für den Kopfbereich -->
+ <br><br>
+ <h1>EA6 Objekte bewegen - fliegende Kugeln</h1>
+ <h3> von Makbule Balin im Modul Graphical Visualisation Technologies </h3>
+ <p>
+	 <!-- Aufgabenbeschreibung -->
+	<b>Aufgabe:</b> Lassen Sie die vier Kugeln aus dem Beispielprogramm aus der Lerneinheit TFM interaktiv durch den Torus fliegen.</br>
+	Dabei bewegen sich die Kugeln kontinuierlich auf Kreisbahnen so, dass sie sich nie berühren.<br>
+	 <br>
+	 <b>Interaktion:</b> Die Bewegung erfolgt automatisch und kann mit <b>K</b> ein- und ausgeschaltet werden. <br>
+	 <br>
+	 <br>
+	 <br>
+	 
+ </p>
+
+
+
+
+	<body onload="app.start()">
+		<canvas id="canvas" width="600" height="600"></canvas>
+
+
+	</head>
+	<body onload="app.start()">
+	<p>
+		<br>
+		<br>
+		<br>
+		<br>
+	<span class="grey-text">
+		Für die Lösung der Aufgabe wurden diverse Websites wie w3schools.com, https://webglfundamentals.org/webgl/lessons/webgl-2d-rotation.html</br>
+		& das Kapitel 11 aus dem Modulskript zur Hilfe gezogen.
+	</span>
+</p>
+
+	</body>
+
+
+
+
+	
+</html>
