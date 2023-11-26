@@ -153,15 +153,15 @@ var updateInterval = 20; // Zeitintervall für die Aktualisierung der Kugelposit
         var fs = "fillwireframe";
         createModel("torus", fs, [0, 0, 0], [0, 0, 0], [2, 2, 2]);
         createModel("plane", "wireframe",  [0, -.8, 0], [0, 0, 0], 
-            [2, 2, 2]);
+            [4, 4, 4]);
         createModel("sphere", fs, [1, -.3, -1], [0, 0, 0], 
             [.3, .3, .3]);
         createModel("sphere", fs, [-1, -.3, -1], [0, 0, 0], 
             [.2, .2, .2]);
         createModel("sphere", fs, [1, -.3, 1], [0, 0, 0], 
-            [.2, .2, .2]);
-        createModel("sphere", fs, [-1, -.3, 1], [0, 0, 0], 
             [.3, .3, .3]);
+        createModel("sphere", fs, [-1, -.3, 1], [0, 0, 0], 
+            [.2, .2, .2]);
     
 			
         // Select one model that can be manipulated interactively by user.
@@ -171,7 +171,7 @@ var updateInterval = 20; // Zeitintervall für die Aktualisierung der Kugelposit
 
  // Hier füge die Funktion updateSpherePositions() hinzu
  setInterval(updateSpherePositions, 15); // 100 FPS - Du kannst die Zeitintervalle anpassen
-
+ setInterval(updateSpherePositions2, 15); // 100 FPS - Du kannst die Zeitintervalle anpassen
 
 
 
@@ -183,7 +183,7 @@ var updateInterval = 20; // Zeitintervall für die Aktualisierung der Kugelposit
 // Platz für die Funktion updateSpherePositions()
 var animationAngle = 10; // Winkel für die Animationsberechnung
 var radius = 1.1; // Radius der Kreisbahnen
-var animationSpeed = 0.004; // Geschwindigkeit der Animation
+var animationSpeed = 0.0025; // Geschwindigkeit der Animation
 var sphereDistance = 2; // Abstand zwischen den Kugeln
 
 
@@ -194,17 +194,14 @@ function updateSpherePositions() {
 		var torusCenter = [0.2, 0.7, 0.2]; // Zentrum des Torus
 
 		for (var i = 2; i < models.length; i++) {
-			var offset = (i - 2) * Math.PI / 4; // Versatz für jede Kugel
-
-			
+			var offset = (i - 2) * Math.PI / 1; // Versatz für jede Kugel	
 		
 			var z = torusCenter[2];
 			var x = torusCenter[0] + radius * Math.cos(animationAngle + offset);
 			var y = torusCenter[1] + radius * Math.sin(animationAngle + offset);
+			
+			
 			models[i].translate = [y + 0.5, z, x];
-			
-
-			
 		}
 }
 
@@ -218,13 +215,11 @@ function updateSpherePositions2() {
 
 		for (var i = 4; i < models.length; i++) {
 			var offset = (i - 2) * Math.PI / 1; // Versatz für jede Kugel
-
-			
 		
 			var z = torusCenter[2];
 			var x = torusCenter[0] + radius * Math.sin(animationAngle + offset);
 			var y = torusCenter[1] + radius * Math.cos(animationAngle + offset);
-			models[i].translate = [y - 2, z, x];
+			models[i].translate = [y - 1.5, z, x];
 
 			
 
@@ -410,6 +405,7 @@ function init() {
 				// Wenn die Animation läuft, führen Sie die Aktualisierung der Kugelpositionen durch
 				updateSpherePositions();
 				updateSpherePositions2();
+				
 			}
 
 		}
